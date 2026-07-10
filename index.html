@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Puerto Rico Transfer · Bank to Bank</title>
+
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js">
+    </script>
+
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+
+    <style>
+        /* ─── RESET & BASE ─── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px 12px;
+            margin: 0;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .app-wrapper {
+            max-width: 860px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* ─── HEADER ─── */
+        .app-header {
+            background: linear-gradient(135deg, #002868 0%, #003399 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 40, 104, 0.20);
+        }
+
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .app-header .brand .logo-icon {
+            background: rgba(255, 255, 255, 0.15);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            color: #ffd700;
+        }
+
+        .app-header .brand h1 {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.2px;
+            line-height: 1.2;
+        }
+
+        .app-header .brand small {
+            display: block;
+            font-weight: 400;
+            font-size: 10px;
+            opacity: 0.8;
+            letter-spacing: 0.3px;
+        }
+
+        .app-header .flag-badge {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            flex-shrink: 0;
+        }
+
+        .app-header .flag-badge i {
+            font-size: 14px;
+        }
+
+        .app-header .flag-badge .flag-pr {
+            font-size: 16px;
+        }
+
+        /* ─── MAIN CARD ─── */
+        .main-card {
+            background: #ffffff;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.02);
+            padding: 20px 18px 24px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* ─── FORM ─── */
+        .transfer-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .form-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: #8b9aae;
+            margin-bottom: 2px;
+            border-bottom: 2px solid #f0f2f6;
+            padding-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e2a3a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group label .required {
+            color: #d91023;
+            font-weight: 700;
+        }
+
+        .form-group label i {
+            color: #7d8da0;
+            font-size: 13px;
+            width: 16px;
+            flex-shrink: 0;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 14px;
+            border: 1.5px solid #e2e7ef;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: #fafbfd;
+            transition: all 0.2s;
+            color: #141f2e;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #002868;
+            box-shadow: 0 0 0 3px rgba(0, 40, 104, 0.08);
+            background: #ffffff;
+        }
+
+        .form-group input::placeholder {
+            color: #b0bccd;
+        }
+
+        .form-group .helper-text {
+            font-size: 10px;
+            color: #8b9aae;
+            padding-left: 4px;
+        }
+
+        /* Amount */
+        .amount-group {
+            grid-column: 1 / -1;
+        }
+
+        .amount-group .amount-wrap {
+            position: relative;
+        }
+
+        .amount-group .amount-wrap .currency-symbol {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 800;
+            font-size: 18px;
+            color: #002868;
+            letter-spacing: -0.3px;
+        }
+
+        .amount-group .amount-wrap input {
+            padding-left: 42px;
+            font-size: 19px;
+            font-weight: 700;
+            height: 56px;
+            background: #f7f9fc;
+            border: 2px solid #e2e7ef;
+            border-radius: 14px;
+        }
+
+        .amount-group .amount-wrap input:focus {
+            border-color: #002868;
+            background: #ffffff;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Buttons */
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 13px 20px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #002868, #003399);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(0, 40, 104, 0.28);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(0, 40, 104, 0.36);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0px);
+        }
+
+        .btn-secondary {
+            background: #f0f2f7;
+            color: #1e2a3a;
+            border: 1.5px solid #e2e7ef;
+        }
+
+        .btn-secondary:hover {
+            background: #e6e9f0;
+            border-color: #c8d0dc;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-success {
+            background: #0a7e3c;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(10, 126, 60, 0.28);
+        }
+        .btn-success:hover {
+            background: #08662f;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f5a623;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(245, 166, 35, 0.28);
+        }
+        .btn-warning:hover {
+            background: #d48f1a;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #d91023;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(217, 16, 35, 0.28);
+        }
+        .btn-danger:hover {
+            background: #b00d1a;
+            transform: translateY(-2px);
+        }
+
+        /* ─── RECEIPT OVERLAY ─── */
+        .receipt-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            animation: fadeIn 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .receipt-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .receipt-modal {
+            max-width: 680px;
+            width: 100%;
+            max-height: 96vh;
+            overflow-y: auto;
+            background: transparent;
+            border-radius: 24px;
+            animation: slideUp 0.35s ease;
+            padding: 0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── RECEIPT CARD ─── */
+        .receipt-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .receipt-header {
+            padding: 20px 22px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            transition: background 0.3s;
+        }
+
+        .receipt-header .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .receipt-header .left .icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .receipt-header .left .bank-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.2px;
+            line-height: 1.2;
+        }
+
+        .receipt-header .left .bank-name small {
+            display: block;
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.8;
+            letter-spacing: 0.3px;
+        }
+
+        .receipt-header .status-badge {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .receipt-header .status-badge i {
+            font-size: 14px;
+        }
+
+        .receipt-body {
+            padding: 20px 22px 14px;
+        }
+
+        .receipt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 24px;
+        }
+
+        .receipt-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f2f6;
+        }
+
+        .receipt-item .label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8b9aae;
+        }
+
+        .receipt-item .value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f1a2b;
+            word-break: break-word;
+        }
+
+        .receipt-item .value .bank-tag {
+            display: inline-block;
+            background: #edf1f8;
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #1e2a3a;
+            margin-left: 4px;
+        }
+
+        .receipt-item .value .amount-large {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: #002868;
+        }
+
+        .receipt-divider {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e2e7ef, transparent);
+            margin: 0 0 6px;
+        }
+
+        .receipt-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .receipt-footer {
+            padding: 12px 22px 18px;
+            border-top: 2px solid #f0f2f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #fafbfd;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .receipt-footer .code-section {
+            font-size: 11px;
+            color: #7d8da0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .receipt-footer .code-section .code {
+            font-weight: 700;
+            color: #0f1a2b;
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.4px;
+            background: #edf1f8;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+
+        .receipt-footer .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .receipt-footer .actions button {
+            background: transparent;
+            border: 1.5px solid #dce2ec;
+            border-radius: 40px;
+            padding: 7px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e2a3a;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .receipt-footer .actions button:hover {
+            background: #f0f2f7;
+            border-color: #b0bccd;
+        }
+
+        .receipt-footer .actions button.download-btn {
+            background: #002868;
+            border-color: #002868;
+            color: #fff;
+        }
+
+        .receipt-footer .actions button.download-btn:hover {
+            background: #001a4a;
+            border-color: #001a4a;
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e2a3a;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            max-width: 92%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .toast i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .toast.success i {
+            color: #4caf50;
+        }
+        .toast.error i {
+            color: #d91023;
+        }
+
+        /* ─── FOOTER NOTE ─── */
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: #8b9aae;
+            margin-top: 12px;
+            letter-spacing: 0.2px;
+            padding: 0 4px;
+        }
+
+        /* ─── BANK COLOR SCHEMES ─── */
+        .bank-popular .receipt-header {
+            background: linear-gradient(135deg, #0033A0, #002277);
+        }
+        .bank-popular .receipt-item .value .amount-large {
+            color: #0033A0;
+        }
+
+        .bank-firstbank .receipt-header {
+            background: linear-gradient(135deg, #004481, #002d5a);
+        }
+        .bank-firstbank .receipt-item .value .amount-large {
+            color: #004481;
+        }
+
+        .bank-oriental .receipt-header {
+            background: linear-gradient(135deg, #8B1A4A, #5f1133);
+        }
+        .bank-oriental .receipt-item .value .amount-large {
+            color: #8B1A4A;
+        }
+
+        .bank-santander .receipt-header {
+            background: linear-gradient(135deg, #E0001B, #b30016);
+        }
+        .bank-santander .receipt-item .value .amount-large {
+            color: #E0001B;
+        }
+
+        .bank-banesco .receipt-header {
+            background: linear-gradient(135deg, #1A3C6E, #0f2850);
+        }
+        .bank-banesco .receipt-item .value .amount-large {
+            color: #1A3C6E;
+        }
+
+        .bank-cooperativa .receipt-header {
+            background: linear-gradient(135deg, #2E7D32, #1d5420);
+        }
+        .bank-cooperativa .receipt-item .value .amount-large {
+            color: #2E7D32;
+        }
+
+        .bank-pichincha .receipt-header {
+            background: linear-gradient(135deg, #003DA5, #002a75);
+        }
+        .bank-pichincha .receipt-item .value .amount-large {
+            color: #003DA5;
+        }
+
+        .bank-scotiabank .receipt-header {
+            background: linear-gradient(135deg, #E0001B, #b30016);
+        }
+        .bank-scotiabank .receipt-item .value .amount-large {
+            color: #E0001B;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 700px) {
+            body {
+                padding: 12px 8px;
+            }
+
+            .app-header {
+                padding: 14px 16px;
+                border-radius: 16px 16px 0 0;
+            }
+
+            .app-header .brand h1 {
+                font-size: 16px;
+            }
+            .app-header .brand .logo-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+            }
+            .app-header .flag-badge {
+                font-size: 10px;
+                padding: 4px 12px;
+            }
+
+            .main-card {
+                padding: 16px 14px 20px;
+                border-radius: 0 0 16px 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .amount-group {
+                grid-column: 1;
+            }
+            .full-width {
+                grid-column: 1;
+            }
+
+            .form-group input,
+            .form-group select {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+
+            .amount-group .amount-wrap input {
+                font-size: 17px;
+                height: 50px;
+                padding-left: 38px;
+            }
+            .amount-group .amount-wrap .currency-symbol {
+                font-size: 16px;
+                left: 12px;
+            }
+
+            .btn {
+                font-size: 13px;
+                padding: 12px 16px;
+                min-width: 100px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .receipt-modal {
+                max-height: 98vh;
+                padding: 0;
+            }
+
+            .receipt-card {
+                border-radius: 20px;
+            }
+
+            .receipt-header {
+                padding: 16px 16px 14px;
+                border-radius: 20px 20px 0 0;
+            }
+
+            .receipt-header .left .icon-wrap {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                border-radius: 12px;
+            }
+            .receipt-header .left .bank-name {
+                font-size: 15px;
+            }
+            .receipt-header .left .bank-name small {
+                font-size: 9px;
+            }
+            .receipt-header .status-badge {
+                font-size: 10px;
+                padding: 3px 14px;
+            }
+            .receipt-header .status-badge i {
+                font-size: 12px;
+            }
+
+            .receipt-body {
+                padding: 14px 16px 10px;
+            }
+
+            .receipt-grid {
+                grid-template-columns: 1fr;
+                gap: 2px 0;
+            }
+
+            .receipt-item {
+                padding-bottom: 10px;
+            }
+            .receipt-item .label {
+                font-size: 9px;
+            }
+            .receipt-item .value {
+                font-size: 13px;
+            }
+            .receipt-item .value .amount-large {
+                font-size: 22px;
+            }
+            .receipt-divider {
+                grid-column: 1;
+            }
+            .receipt-item.full-width {
+                grid-column: 1;
+            }
+
+            .receipt-footer {
+                padding: 10px 16px 16px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                border-radius: 0 0 20px 20px;
+            }
+
+            .receipt-footer .code-section {
+                font-size: 10px;
+                justify-content: center;
+            }
+            .receipt-footer .code-section .code {
+                font-size: 11px;
+                padding: 2px 10px;
+            }
+            .receipt-footer .actions {
+                justify-content: center;
+            }
+            .receipt-footer .actions button {
+                font-size: 11px;
+                padding: 6px 14px;
+            }
+
+            .receipt-overlay {
+                padding: 8px;
+            }
+
+            .toast {
+                font-size: 12px;
+                padding: 10px 18px;
+                bottom: 16px;
+                max-width: 96%;
+            }
+        }
+
+        @media (max-width: 400px) {
+            body {
+                padding: 8px 4px;
+            }
+
+            .app-header {
+                padding: 12px 12px;
+                border-radius: 14px 14px 0 0;
+            }
+            .app-header .brand h1 {
+                font-size: 14px;
+            }
+            .app-header .brand .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .app-header .flag-badge {
+                font-size: 9px;
+                padding: 3px 10px;
+            }
+
+            .main-card {
+                padding: 12px 10px 16px;
+                border-radius: 0 0 14px 14px;
+            }
+
+            .form-group input,
+            .form-group select {
+                font-size: 13px;
+                padding: 8px 10px;
+                border-radius: 10px;
+            }
+
+            .amount-group .amount-wrap input {
+                font-size: 15px;
+                height: 44px;
+                padding-left: 34px;
+            }
+            .amount-group .amount-wrap .currency-symbol {
+                font-size: 14px;
+                left: 10px;
+            }
+
+            .btn {
+                font-size: 12px;
+                padding: 10px 12px;
+                min-width: 80px;
+            }
+
+            .receipt-header {
+                padding: 12px 12px 10px;
+            }
+            .receipt-header .left .icon-wrap {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .receipt-header .left .bank-name {
+                font-size: 13px;
+            }
+            .receipt-body {
+                padding: 10px 12px 8px;
+            }
+            .receipt-item .value {
+                font-size: 12px;
+            }
+            .receipt-item .value .amount-large {
+                font-size: 19px;
+            }
+            .receipt-footer {
+                padding: 8px 12px 14px;
+            }
+            .receipt-footer .actions button {
+                font-size: 10px;
+                padding: 5px 12px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f2f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c8d0dc;
+            border-radius: 20px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aab3c3;
+        }
+
+        #tempCapture {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 680px;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        #tempCapture .receipt-card {
+            border-radius: 24px;
+            box-shadow: none;
+        }
+
+        #tempCapture .receipt-footer .actions {
+            display: none !important;
+        }
+
+        /* loading spinner inline */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.7s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .btn .spinner {
+            width: 16px;
+            height: 16px;
+            border-width: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- ─── HEADER ─── -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon"><i class="fas fa-building-columns"></i></div>
+                <div>
+                    <h1 id="headerTitle">Puerto Rico Transfer</h1>
+                    <small id="headerSub">Bank to Bank · Secure</small>
+                </div>
+            </div>
+            <div class="flag-badge">
+                <i class="fas fa-flag"></i>
+                <span class="flag-pr">🇵🇷</span> Puerto Rico
+            </div>
+        </header>
+
+        <!-- ─── MAIN CARD ─── -->
+        <div class="main-card">
+
+            <form class="transfer-form" id="transferForm" autocomplete="off">
+
+                <!-- Sender -->
+                <div class="form-section-title" id="titleSender"><i class="fas fa-arrow-right-from-bracket" style="margin-right:8px;"></i>Sender Details</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label id="lblSenderName"><i class="fas fa-user"></i> Full Name <span class="required">*</span></label>
+                        <input type="text" id="senderName" placeholder="e.g. Carlos Mendoza Torres" value="" />
+                        <span class="helper-text" id="helperSenderName">Account holder</span>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblSenderBank"><i class="fas fa-building-columns"></i> Bank <span class="required">*</span></label>
+                        <select id="senderBank">
+                            <option value="Banco Popular">Banco Popular</option>
+                            <option value="FirstBank">FirstBank</option>
+                            <option value="Oriental Bank">Oriental Bank</option>
+                            <option value="Banco Santander">Banco Santander</option>
+                            <option value="Banesco">Banesco</option>
+                            <option value="Cooperativa de Ahorro y Crédito">Cooperativa</option>
+                            <option value="Banco Pichincha">Banco Pichincha</option>
+                            <option value="Scotiabank">Scotiabank</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label id="lblSenderAccount"><i class="fas fa-hashtag"></i> Account Number <span class="required">*</span></label>
+                        <input type="text" id="senderAccount" placeholder="e.g. 0011-0245-7890-1234" value="" />
+                        <span class="helper-text" id="helperSenderAccount">CCI or account number</span>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblSenderDoc"><i class="fas fa-credit-card"></i> Document</label>
+                        <input type="text" id="senderDoc" placeholder="e.g. 12345678" value="" />
+                        <span class="helper-text" id="helperSenderDoc">ID / RUC (optional)</span>
+                    </div>
+                </div>
+
+                <!-- Recipient -->
+                <div class="form-section-title" style="margin-top:4px;" id="titleRecipient"><i class="fas fa-arrow-right-to-bracket" style="margin-right:8px;"></i>Recipient Details</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label id="lblRecipientName"><i class="fas fa-user-check"></i> Full Name <span class="required">*</span></label>
+                        <input type="text" id="recipientName" placeholder="e.g. Ana Lucía Flores Ramos" value="" />
+                        <span class="helper-text" id="helperRecipientName">Account holder</span>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblRecipientBank"><i class="fas fa-building-columns"></i> Bank <span class="required">*</span></label>
+                        <select id="recipientBank">
+                            <option value="Banco Popular" selected>Banco Popular</option>
+                            <option value="FirstBank">FirstBank</option>
+                            <option value="Oriental Bank">Oriental Bank</option>
+                            <option value="Banco Santander">Banco Santander</option>
+                            <option value="Banesco">Banesco</option>
+                            <option value="Cooperativa de Ahorro y Crédito">Cooperativa</option>
+                            <option value="Banco Pichincha">Banco Pichincha</option>
+                            <option value="Scotiabank">Scotiabank</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label id="lblRecipientAccount"><i class="fas fa-hashtag"></i> Account Number <span class="required">*</span></label>
+                        <input type="text" id="recipientAccount" placeholder="e.g. 0022-0367-8912-3456" value="" />
+                        <span class="helper-text" id="helperRecipientAccount">CCI or account number</span>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblRecipientDoc"><i class="fas fa-credit-card"></i> Document</label>
+                        <input type="text" id="recipientDoc" placeholder="e.g. 87654321" value="" />
+                        <span class="helper-text" id="helperRecipientDoc">ID / RUC (optional)</span>
+                    </div>
+                </div>
+
+                <!-- Transfer Details -->
+                <div class="form-section-title" style="margin-top:4px;" id="titleDetails"><i class="fas fa-arrow-right-arrow-left" style="margin-right:8px;"></i>Transfer Details</div>
+
+                <div class="form-row">
+                    <div class="form-group amount-group">
+                        <label id="lblAmount"><i class="fas fa-money-bill-wave"></i> Amount ($) <span class="required">*</span></label>
+                        <div class="amount-wrap">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" value="" />
+                        </div>
+                        <span class="helper-text" id="helperAmount">Enter amount in US dollars (USD)</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label id="lblConcept"><i class="fas fa-pen"></i> Concept / Description</label>
+                        <input type="text" id="concept" placeholder="e.g. Payment for services" value="" />
+                        <span class="helper-text" id="helperConcept">Optional — appears on the receipt</span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="clearBtn">
+                        <i class="fas fa-eraser"></i> <span id="btnClearText">Clear</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="sendBtn">
+                        <i class="fas fa-paper-plane"></i> <span id="btnSendText">Send Transfer</span>
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <p class="footer-note" id="footerNote">
+            <i class="fas fa-lock" style="margin-right:6px;"></i> Simulation · For demonstration purposes only
+        </p>
+
+    </div>
+
+    <!-- ─── RECEIPT OVERLAY ─── -->
+    <div class="receipt-overlay" id="receiptOverlay">
+        <div class="receipt-modal">
+
+            <div class="receipt-card" id="receiptCard">
+                <div class="receipt-header" id="receiptHeader">
+                    <div class="left">
+                        <div class="icon-wrap"><i class="fas fa-university"></i></div>
+                        <div>
+                            <div class="bank-name" id="receiptBankName">Bank <span id="bankNameSpan">Banco Popular</span>
+                                <small id="receiptBankSub">Interbank Transfer</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-badge">
+                        <i class="fas fa-check-circle"></i> <span id="receiptStatusText">CONFIRMED</span>
+                    </div>
+                </div>
+
+                <div class="receipt-body">
+                    <div class="receipt-grid" id="receiptGrid">
+                        <!-- filled by JS -->
+                    </div>
+                </div>
+
+                <div class="receipt-footer">
+                    <div class="code-section">
+                        <i class="far fa-clock"></i> <span id="receiptOpLabel">Operation</span>:
+                        <span class="code" id="receiptCode">PR-2026-07-05-8A3F</span>
+                    </div>
+                    <div class="actions">
+                        <button id="closeReceiptBtn"><i class="fas fa-xmark"></i> <span id="receiptCloseText">Close</span></button>
+                        <button id="printReceiptBtn"><i class="fas fa-print"></i> <span id="receiptPrintText">Print</span></button>
+                        <button class="download-btn" id="downloadReceiptBtn"><i class="fas fa-download"></i> <span id="receiptDownloadText">Download</span></button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ─── TOAST ─── -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Transfer completed!</span>
+    </div>
+
+    <script>
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  FIREBASE CONFIG
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        const firebaseConfig = {
+            apiKey: "AIzaSyDivFTAKUznc1xryU8marfMDZG3v1eYsl8",
+            authDomain: "englabet-ad1fe.firebaseapp.com",
+            databaseURL: "https://englabet-ad1fe-default-rtdb.firebaseio.com",
+            projectId: "englabet-ad1fe",
+            storageBucket: "englabet-ad1fe.firebasestorage.app",
+            messagingSenderId: "124544822433",
+            appId: "1:124544822433:web:c77c980f28c99364c214e0",
+            measurementId: "G-JMYYM433R7"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  DOM REFS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        const form = document.getElementById('transferForm');
+        const senderName = document.getElementById('senderName');
+        const senderBank = document.getElementById('senderBank');
+        const senderAccount = document.getElementById('senderAccount');
+        const senderDoc = document.getElementById('senderDoc');
+        const recipientName = document.getElementById('recipientName');
+        const recipientBank = document.getElementById('recipientBank');
+        const recipientAccount = document.getElementById('recipientAccount');
+        const recipientDoc = document.getElementById('recipientDoc');
+        const amountInput = document.getElementById('amount');
+        const concept = document.getElementById('concept');
+        const clearBtn = document.getElementById('clearBtn');
+        const sendBtn = document.getElementById('sendBtn');
+
+        const overlay = document.getElementById('receiptOverlay');
+        const receiptGrid = document.getElementById('receiptGrid');
+        const receiptCode = document.getElementById('receiptCode');
+        const receiptHeader = document.getElementById('receiptHeader');
+        const bankNameSpan = document.getElementById('bankNameSpan');
+        const receiptCard = document.getElementById('receiptCard');
+
+        const closeBtn = document.getElementById('closeReceiptBtn');
+        const printBtn = document.getElementById('printReceiptBtn');
+        const downloadBtn = document.getElementById('downloadReceiptBtn');
+
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // ─── translatable elements ───
+        const elMap = {
+            headerTitle: document.getElementById('headerTitle'),
+            headerSub: document.getElementById('headerSub'),
+            titleSender: document.getElementById('titleSender'),
+            lblSenderName: document.getElementById('lblSenderName'),
+            helperSenderName: document.getElementById('helperSenderName'),
+            lblSenderBank: document.getElementById('lblSenderBank'),
+            lblSenderAccount: document.getElementById('lblSenderAccount'),
+            helperSenderAccount: document.getElementById('helperSenderAccount'),
+            lblSenderDoc: document.getElementById('lblSenderDoc'),
+            helperSenderDoc: document.getElementById('helperSenderDoc'),
+            titleRecipient: document.getElementById('titleRecipient'),
+            lblRecipientName: document.getElementById('lblRecipientName'),
+            helperRecipientName: document.getElementById('helperRecipientName'),
+            lblRecipientBank: document.getElementById('lblRecipientBank'),
+            lblRecipientAccount: document.getElementById('lblRecipientAccount'),
+            helperRecipientAccount: document.getElementById('helperRecipientAccount'),
+            lblRecipientDoc: document.getElementById('lblRecipientDoc'),
+            helperRecipientDoc: document.getElementById('helperRecipientDoc'),
+            titleDetails: document.getElementById('titleDetails'),
+            lblAmount: document.getElementById('lblAmount'),
+            helperAmount: document.getElementById('helperAmount'),
+            lblConcept: document.getElementById('lblConcept'),
+            helperConcept: document.getElementById('helperConcept'),
+            btnClearText: document.getElementById('btnClearText'),
+            btnSendText: document.getElementById('btnSendText'),
+            footerNote: document.getElementById('footerNote'),
+            receiptBankSub: document.getElementById('receiptBankSub'),
+            receiptStatusText: document.getElementById('receiptStatusText'),
+            receiptOpLabel: document.getElementById('receiptOpLabel'),
+            receiptCloseText: document.getElementById('receiptCloseText'),
+            receiptPrintText: document.getElementById('receiptPrintText'),
+            receiptDownloadText: document.getElementById('receiptDownloadText'),
+        };
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  BANK COLOR MAP (Puerto Rico banks)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        const bankColorMap = {
+            'Banco Popular': { class: 'bank-popular', label: 'Banco Popular' },
+            'FirstBank': { class: 'bank-firstbank', label: 'FirstBank' },
+            'Oriental Bank': { class: 'bank-oriental', label: 'Oriental Bank' },
+            'Banco Santander': { class: 'bank-santander', label: 'Banco Santander' },
+            'Banesco': { class: 'bank-banesco', label: 'Banesco' },
+            'Cooperativa de Ahorro y Crédito': { class: 'bank-cooperativa', label: 'Cooperativa' },
+            'Banco Pichincha': { class: 'bank-pichincha', label: 'Banco Pichincha' },
+            'Scotiabank': { class: 'bank-scotiabank', label: 'Scotiabank' }
+        };
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  LANGUAGE STRINGS (English default, plus others)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        const LANG_FALLBACK = {
+            en: {
+                headerTitle: 'Puerto Rico Transfer',
+                headerSub: 'Bank to Bank · Secure',
+                titleSender: 'Sender Details',
+                lblSenderName: 'Full Name *',
+                helperSenderName: 'Account holder',
+                lblSenderBank: 'Bank *',
+                lblSenderAccount: 'Account Number *',
+                helperSenderAccount: 'CCI or account number',
+                lblSenderDoc: 'Document',
+                helperSenderDoc: 'ID / RUC (optional)',
+                titleRecipient: 'Recipient Details',
+                lblRecipientName: 'Full Name *',
+                helperRecipientName: 'Account holder',
+                lblRecipientBank: 'Bank *',
+                lblRecipientAccount: 'Account Number *',
+                helperRecipientAccount: 'CCI or account number',
+                lblRecipientDoc: 'Document',
+                helperRecipientDoc: 'ID / RUC (optional)',
+                titleDetails: 'Transfer Details',
+                lblAmount: 'Amount ($) *',
+                helperAmount: 'Enter amount in US dollars (USD)',
+                lblConcept: 'Concept / Description',
+                helperConcept: 'Optional — appears on the receipt',
+                btnClearText: 'Clear',
+                btnSendText: 'Send Transfer',
+                footerNote: 'Simulation · For demonstration purposes only',
+                receiptBankSub: 'Interbank Transfer',
+                receiptStatusText: 'CONFIRMED',
+                receiptOpLabel: 'Operation',
+                receiptCloseText: 'Close',
+                receiptPrintText: 'Print',
+                receiptDownloadText: 'Download',
+                toastSuccess: '✅ Transfer completed! Receipt generated.',
+                toastError: '❌ Error generating receipt. Please try again.',
+                toastClear: '🧹 Form cleared.',
+                toastAmountError: 'Enter a valid amount greater than $ 0.00.',
+                toastSenderNameError: 'Enter the sender\'s name.',
+                toastSenderAccountError: 'Enter the sender\'s account number.',
+                toastRecipientNameError: 'Enter the recipient\'s name.',
+                toastRecipientAccountError: 'Enter the recipient\'s account number.',
+                toastFirestoreError: '❌ Error saving to Firestore. Please try again.',
+                receiptSender: 'Sender',
+                receiptSenderBank: 'Origin Bank',
+                receiptSenderAccount: 'Origin Account',
+                receiptSenderDoc: 'Document',
+                receiptRecipient: 'Recipient',
+                receiptRecipientBank: 'Destination Bank',
+                receiptRecipientAccount: 'Destination Account',
+                receiptRecipientDoc: 'Document',
+                receiptAmount: 'Amount Transferred',
+                receiptConcept: 'Concept',
+                receiptDateTime: 'Date and Time',
+                receiptCode: 'Operation Code',
+                receiptStatus: 'Status',
+                receiptStatusOk: '✓ Successfully completed',
+                receiptOriginTag: 'origin',
+                receiptDestTag: 'destination',
+                placeholderSenderName: 'e.g. Carlos Mendoza Torres',
+                placeholderSenderAccount: 'e.g. 0011-0245-7890-1234',
+                placeholderSenderDoc: 'e.g. 12345678',
+                placeholderRecipientName: 'e.g. Ana Lucía Flores Ramos',
+                placeholderRecipientAccount: 'e.g. 0022-0367-8912-3456',
+                placeholderRecipientDoc: 'e.g. 87654321',
+                placeholderAmount: '0.00',
+                placeholderConcept: 'e.g. Payment for services',
+            },
+            es: {
+                headerTitle: 'Transferencia Puerto Rico',
+                headerSub: 'Banco a Banco · Seguro',
+                titleSender: 'Datos del Remitente',
+                lblSenderName: 'Nombre Completo *',
+                helperSenderName: 'Titular de la cuenta',
+                lblSenderBank: 'Banco *',
+                lblSenderAccount: 'N° de Cuenta *',
+                helperSenderAccount: 'CCI o número de cuenta',
+                lblSenderDoc: 'Documento',
+                helperSenderDoc: 'DNI / RUC (opcional)',
+                titleRecipient: 'Datos del Beneficiario',
+                lblRecipientName: 'Nombre Completo *',
+                helperRecipientName: 'Titular de la cuenta',
+                lblRecipientBank: 'Banco *',
+                lblRecipientAccount: 'N° de Cuenta *',
+                helperRecipientAccount: 'CCI o número de cuenta',
+                lblRecipientDoc: 'Documento',
+                helperRecipientDoc: 'DNI / RUC (opcional)',
+                titleDetails: 'Detalles de la Transferencia',
+                lblAmount: 'Monto ($) *',
+                helperAmount: 'Ingresa el monto en dólares (USD)',
+                lblConcept: 'Concepto / Descripción',
+                helperConcept: 'Opcional — aparece en el comprobante',
+                btnClearText: 'Limpiar',
+                btnSendText: 'Enviar Transferencia',
+                footerNote: 'Simulación · Solo para fines demostrativos',
+                receiptBankSub: 'Transferencia Interbancaria',
+                receiptStatusText: 'CONFIRMADO',
+                receiptOpLabel: 'Operación',
+                receiptCloseText: 'Cerrar',
+                receiptPrintText: 'Imprimir',
+                receiptDownloadText: 'Descargar',
+                toastSuccess: '✅ ¡Transferencia completada! Comprobante generado.',
+                toastError: '❌ Error al generar el comprobante. Intenta nuevamente.',
+                toastClear: '🧹 Formulario limpiado.',
+                toastAmountError: 'Ingresa un monto válido mayor a $ 0.00.',
+                toastSenderNameError: 'Ingresa el nombre del remitente.',
+                toastSenderAccountError: 'Ingresa el número de cuenta del remitente.',
+                toastRecipientNameError: 'Ingresa el nombre del beneficiario.',
+                toastRecipientAccountError: 'Ingresa el número de cuenta del beneficiario.',
+                toastFirestoreError: '❌ Error al guardar en Firestore. Intenta nuevamente.',
+                receiptSender: 'Remitente',
+                receiptSenderBank: 'Banco Origen',
+                receiptSenderAccount: 'Cuenta Origen',
+                receiptSenderDoc: 'Documento',
+                receiptRecipient: 'Beneficiario',
+                receiptRecipientBank: 'Banco Destino',
+                receiptRecipientAccount: 'Cuenta Destino',
+                receiptRecipientDoc: 'Documento',
+                receiptAmount: 'Monto Transferido',
+                receiptConcept: 'Concepto',
+                receiptDateTime: 'Fecha y Hora',
+                receiptCode: 'Código de Operación',
+                receiptStatus: 'Estado',
+                receiptStatusOk: '✓ Completado exitosamente',
+                receiptOriginTag: 'origen',
+                receiptDestTag: 'destino',
+                placeholderSenderName: 'Ej. Carlos Mendoza Torres',
+                placeholderSenderAccount: 'Ej. 0011-0245-7890-1234',
+                placeholderSenderDoc: 'Ej. 12345678',
+                placeholderRecipientName: 'Ej. Ana Lucía Flores Ramos',
+                placeholderRecipientAccount: 'Ej. 0022-0367-8912-3456',
+                placeholderRecipientDoc: 'Ej. 87654321',
+                placeholderAmount: '0.00',
+                placeholderConcept: 'Ej. Pago por servicios',
+            },
+            pt: {
+                headerTitle: 'Transferência Porto Rico',
+                headerSub: 'Banco a Banco · Seguro',
+                titleSender: 'Dados do Remetente',
+                lblSenderName: 'Nome Completo *',
+                helperSenderName: 'Titular da conta',
+                lblSenderBank: 'Banco *',
+                lblSenderAccount: 'Nº da Conta *',
+                helperSenderAccount: 'CCI ou número da conta',
+                lblSenderDoc: 'Documento',
+                helperSenderDoc: 'DNI / RUC (opcional)',
+                titleRecipient: 'Dados do Beneficiário',
+                lblRecipientName: 'Nome Completo *',
+                helperRecipientName: 'Titular da conta',
+                lblRecipientBank: 'Banco *',
+                lblRecipientAccount: 'Nº da Conta *',
+                helperRecipientAccount: 'CCI ou número da conta',
+                lblRecipientDoc: 'Documento',
+                helperRecipientDoc: 'DNI / RUC (opcional)',
+                titleDetails: 'Detalhes da Transferência',
+                lblAmount: 'Valor ($) *',
+                helperAmount: 'Insira o valor em dólares (USD)',
+                lblConcept: 'Conceito / Descrição',
+                helperConcept: 'Opcional — aparece no comprovante',
+                btnClearText: 'Limpar',
+                btnSendText: 'Enviar Transferência',
+                footerNote: 'Simulação · Apenas para fins demonstrativos',
+                receiptBankSub: 'Transferência Interbancária',
+                receiptStatusText: 'CONFIRMADO',
+                receiptOpLabel: 'Operação',
+                receiptCloseText: 'Fechar',
+                receiptPrintText: 'Imprimir',
+                receiptDownloadText: 'Baixar',
+                toastSuccess: '✅ Transferência concluída! Comprovante gerado.',
+                toastError: '❌ Erro ao gerar o comprovante. Tente novamente.',
+                toastClear: '🧹 Formulário limpo.',
+                toastAmountError: 'Insira um valor válido maior que $ 0.00.',
+                toastSenderNameError: 'Insira o nome do remetente.',
+                toastSenderAccountError: 'Insira o número da conta do remetente.',
+                toastRecipientNameError: 'Insira o nome do beneficiário.',
+                toastRecipientAccountError: 'Insira o número da conta do beneficiário.',
+                toastFirestoreError: '❌ Erro ao salvar no Firestore. Tente novamente.',
+                receiptSender: 'Remetente',
+                receiptSenderBank: 'Banco de Origem',
+                receiptSenderAccount: 'Conta de Origem',
+                receiptSenderDoc: 'Documento',
+                receiptRecipient: 'Beneficiário',
+                receiptRecipientBank: 'Banco de Destino',
+                receiptRecipientAccount: 'Conta de Destino',
+                receiptRecipientDoc: 'Documento',
+                receiptAmount: 'Valor Transferido',
+                receiptConcept: 'Conceito',
+                receiptDateTime: 'Data e Hora',
+                receiptCode: 'Código de Operação',
+                receiptStatus: 'Estado',
+                receiptStatusOk: '✓ Concluído com sucesso',
+                receiptOriginTag: 'origem',
+                receiptDestTag: 'destino',
+                placeholderSenderName: 'Ex. Carlos Mendoza Torres',
+                placeholderSenderAccount: 'Ex. 0011-0245-7890-1234',
+                placeholderSenderDoc: 'Ex. 12345678',
+                placeholderRecipientName: 'Ex. Ana Lucía Flores Ramos',
+                placeholderRecipientAccount: 'Ex. 0022-0367-8912-3456',
+                placeholderRecipientDoc: 'Ex. 87654321',
+                placeholderAmount: '0.00',
+                placeholderConcept: 'Ex. Pagamento por serviços',
+            },
+            fr: {
+                headerTitle: 'Transfert Porto Rico',
+                headerSub: 'Banque à Banque · Sécurisé',
+                titleSender: 'Coordonnées de l\'Expéditeur',
+                lblSenderName: 'Nom Complet *',
+                helperSenderName: 'Titulaire du compte',
+                lblSenderBank: 'Banque *',
+                lblSenderAccount: 'N° de Compte *',
+                helperSenderAccount: 'CCI ou numéro de compte',
+                lblSenderDoc: 'Document',
+                helperSenderDoc: 'DNI / RUC (optionnel)',
+                titleRecipient: 'Coordonnées du Bénéficiaire',
+                lblRecipientName: 'Nom Complet *',
+                helperRecipientName: 'Titulaire du compte',
+                lblRecipientBank: 'Banque *',
+                lblRecipientAccount: 'N° de Compte *',
+                helperRecipientAccount: 'CCI ou numéro de compte',
+                lblRecipientDoc: 'Document',
+                helperRecipientDoc: 'DNI / RUC (optionnel)',
+                titleDetails: 'Détails du Transfert',
+                lblAmount: 'Montant ($) *',
+                helperAmount: 'Entrez le montant en dollars (USD)',
+                lblConcept: 'Concept / Description',
+                helperConcept: 'Optionnel — apparaît sur le reçu',
+                btnClearText: 'Effacer',
+                btnSendText: 'Envoyer le Transfert',
+                footerNote: 'Simulation · Uniquement à des fins de démonstration',
+                receiptBankSub: 'Transfert Interbancaire',
+                receiptStatusText: 'CONFIRMÉ',
+                receiptOpLabel: 'Opération',
+                receiptCloseText: 'Fermer',
+                receiptPrintText: 'Imprimer',
+                receiptDownloadText: 'Télécharger',
+                toastSuccess: '✅ Transfert terminé! Reçu généré.',
+                toastError: '❌ Erreur lors de la génération du reçu. Réessayez.',
+                toastClear: '🧹 Formulaire effacé.',
+                toastAmountError: 'Entrez un montant valide supérieur à $ 0.00.',
+                toastSenderNameError: 'Entrez le nom de l\'expéditeur.',
+                toastSenderAccountError: 'Entrez le numéro de compte de l\'expéditeur.',
+                toastRecipientNameError: 'Entrez le nom du bénéficiaire.',
+                toastRecipientAccountError: 'Entrez le numéro de compte du bénéficiaire.',
+                toastFirestoreError: '❌ Erreur lors de l\'enregistrement dans Firestore. Réessayez.',
+                receiptSender: 'Expéditeur',
+                receiptSenderBank: 'Banque d\'Origine',
+                receiptSenderAccount: 'Compte d\'Origine',
+                receiptSenderDoc: 'Document',
+                receiptRecipient: 'Bénéficiaire',
+                receiptRecipientBank: 'Banque de Destination',
+                receiptRecipientAccount: 'Compte de Destination',
+                receiptRecipientDoc: 'Document',
+                receiptAmount: 'Montant Transféré',
+                receiptConcept: 'Concept',
+                receiptDateTime: 'Date et Heure',
+                receiptCode: 'Code d\'Opération',
+                receiptStatus: 'Statut',
+                receiptStatusOk: '✓ Terminé avec succès',
+                receiptOriginTag: 'origine',
+                receiptDestTag: 'destination',
+                placeholderSenderName: 'Ex. Carlos Mendoza Torres',
+                placeholderSenderAccount: 'Ex. 0011-0245-7890-1234',
+                placeholderSenderDoc: 'Ex. 12345678',
+                placeholderRecipientName: 'Ex. Ana Lucía Flores Ramos',
+                placeholderRecipientAccount: 'Ex. 0022-0367-8912-3456',
+                placeholderRecipientDoc: 'Ex. 87654321',
+                placeholderAmount: '0.00',
+                placeholderConcept: 'Ex. Paiement pour services',
+            }
+        };
+
+        let currentLang = 'en';
+        let langStrings = {};
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  LOAD LANGUAGE FROM FIRESTORE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function loadLanguage() {
+            try {
+                const doc = await db.collection('settings').doc('app').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const langCode = data.senderLanguage || 'en';
+                    if (LANG_FALLBACK[langCode]) {
+                        currentLang = langCode;
+                        langStrings = LANG_FALLBACK[langCode];
+                    } else {
+                        currentLang = 'en';
+                        langStrings = LANG_FALLBACK.en;
+                    }
+                } else {
+                    currentLang = 'en';
+                    langStrings = LANG_FALLBACK.en;
+                }
+            } catch (e) {
+                console.warn('Error loading language, using fallback:', e);
+                currentLang = 'en';
+                langStrings = LANG_FALLBACK.en;
+            }
+            applyLanguage();
+        }
+
+        function applyLanguage() {
+            const s = langStrings;
+            if (elMap.headerTitle) elMap.headerTitle.textContent = s.headerTitle || 'Puerto Rico Transfer';
+            if (elMap.headerSub) elMap.headerSub.textContent = s.headerSub || 'Bank to Bank · Secure';
+            if (elMap.titleSender) elMap.titleSender.innerHTML = '<i class="fas fa-arrow-right-from-bracket" style="margin-right:8px;"></i>' + (s
+                .titleSender || 'Sender Details');
+            if (elMap.lblSenderName) elMap.lblSenderName.innerHTML = '<i class="fas fa-user"></i> ' + (s.lblSenderName ||
+                'Full Name *');
+            if (elMap.helperSenderName) elMap.helperSenderName.textContent = s.helperSenderName || 'Account holder';
+            if (elMap.lblSenderBank) elMap.lblSenderBank.innerHTML = '<i class="fas fa-building-columns"></i> ' + (s.lblSenderBank ||
+                'Bank *');
+            if (elMap.lblSenderAccount) elMap.lblSenderAccount.innerHTML = '<i class="fas fa-hashtag"></i> ' + (s
+                .lblSenderAccount || 'Account Number *');
+            if (elMap.helperSenderAccount) elMap.helperSenderAccount.textContent = s.helperSenderAccount ||
+                'CCI or account number';
+            if (elMap.lblSenderDoc) elMap.lblSenderDoc.innerHTML = '<i class="fas fa-credit-card"></i> ' + (s.lblSenderDoc ||
+                'Document');
+            if (elMap.helperSenderDoc) elMap.helperSenderDoc.textContent = s.helperSenderDoc || 'ID / RUC (optional)';
+            if (elMap.titleRecipient) elMap.titleRecipient.innerHTML = '<i class="fas fa-arrow-right-to-bracket" style="margin-right:8px;"></i>' +
+                (s.titleRecipient || 'Recipient Details');
+            if (elMap.lblRecipientName) elMap.lblRecipientName.innerHTML = '<i class="fas fa-user-check"></i> ' + (s
+                .lblRecipientName || 'Full Name *');
+            if (elMap.helperRecipientName) elMap.helperRecipientName.textContent = s.helperRecipientName ||
+                'Account holder';
+            if (elMap.lblRecipientBank) elMap.lblRecipientBank.innerHTML = '<i class="fas fa-building-columns"></i> ' + (s
+                .lblRecipientBank || 'Bank *');
+            if (elMap.lblRecipientAccount) elMap.lblRecipientAccount.innerHTML = '<i class="fas fa-hashtag"></i> ' + (s
+                .lblRecipientAccount || 'Account Number *');
+            if (elMap.helperRecipientAccount) elMap.helperRecipientAccount.textContent = s.helperRecipientAccount ||
+                'CCI or account number';
+            if (elMap.lblRecipientDoc) elMap.lblRecipientDoc.innerHTML = '<i class="fas fa-credit-card"></i> ' + (s
+                .lblRecipientDoc || 'Document');
+            if (elMap.helperRecipientDoc) elMap.helperRecipientDoc.textContent = s.helperRecipientDoc ||
+                'ID / RUC (optional)';
+            if (elMap.titleDetails) elMap.titleDetails.innerHTML = '<i class="fas fa-arrow-right-arrow-left" style="margin-right:8px;"></i>' +
+                (s.titleDetails || 'Transfer Details');
+            if (elMap.lblAmount) elMap.lblAmount.innerHTML = '<i class="fas fa-money-bill-wave"></i> ' + (s.lblAmount ||
+                'Amount ($) *');
+            if (elMap.helperAmount) elMap.helperAmount.textContent = s.helperAmount || 'Enter amount in US dollars (USD)';
+            if (elMap.lblConcept) elMap.lblConcept.innerHTML = '<i class="fas fa-pen"></i> ' + (s.lblConcept ||
+                'Concept / Description');
+            if (elMap.helperConcept) elMap.helperConcept.textContent = s.helperConcept ||
+                'Optional — appears on the receipt';
+            if (elMap.btnClearText) elMap.btnClearText.textContent = s.btnClearText || 'Clear';
+            if (elMap.btnSendText) elMap.btnSendText.textContent = s.btnSendText || 'Send Transfer';
+            if (elMap.footerNote) elMap.footerNote.innerHTML = '<i class="fas fa-lock" style="margin-right:6px;"></i> ' + (s
+                .footerNote || 'Simulation · For demonstration purposes only');
+            if (elMap.receiptBankSub) elMap.receiptBankSub.textContent = s.receiptBankSub || 'Interbank Transfer';
+            if (elMap.receiptStatusText) elMap.receiptStatusText.textContent = s.receiptStatusText || 'CONFIRMED';
+            if (elMap.receiptOpLabel) elMap.receiptOpLabel.textContent = s.receiptOpLabel || 'Operation';
+            if (elMap.receiptCloseText) elMap.receiptCloseText.textContent = s.receiptCloseText || 'Close';
+            if (elMap.receiptPrintText) elMap.receiptPrintText.textContent = s.receiptPrintText || 'Print';
+            if (elMap.receiptDownloadText) elMap.receiptDownloadText.textContent = s.receiptDownloadText || 'Download';
+
+            // placeholders
+            senderName.placeholder = s.placeholderSenderName || 'e.g. Carlos Mendoza Torres';
+            senderAccount.placeholder = s.placeholderSenderAccount || 'e.g. 0011-0245-7890-1234';
+            senderDoc.placeholder = s.placeholderSenderDoc || 'e.g. 12345678';
+            recipientName.placeholder = s.placeholderRecipientName || 'e.g. Ana Lucía Flores Ramos';
+            recipientAccount.placeholder = s.placeholderRecipientAccount || 'e.g. 0022-0367-8912-3456';
+            recipientDoc.placeholder = s.placeholderRecipientDoc || 'e.g. 87654321';
+            amountInput.placeholder = s.placeholderAmount || '0.00';
+            concept.placeholder = s.placeholderConcept || 'e.g. Payment for services';
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  HELPERS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function generateReceiptCode() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const rand = Math.random().toString(16).substring(2, 6).toUpperCase();
+            return `PR-${y}${m}${d}-${rand}`;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function getNowFormatted() {
+            const now = new Date();
+            return now.toLocaleString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            }).replace(/,/g, '');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '—';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function showToast(msg, type = 'success') {
+            toastMessage.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        function getBankClass(bankName) {
+            const entry = bankColorMap[bankName];
+            return entry ? entry.class : 'bank-popular';
+        }
+
+        function getBankLabel(bankName) {
+            const entry = bankColorMap[bankName];
+            return entry ? entry.label : bankName;
+        }
+
+        let lastReceiptData = null;
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  BUILD RECEIPT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function buildReceipt(data) {
+            const {
+                sender,
+                senderBankVal,
+                senderAccountVal,
+                senderDocVal,
+                recipient,
+                recipientBankVal,
+                recipientAccountVal,
+                recipientDocVal,
+                amountVal,
+                conceptVal,
+                code
+            } = data;
+
+            const formattedAmount = formatCurrency(amountVal);
+            const now = getNowFormatted();
+            const bankClass = getBankClass(recipientBankVal);
+            const bankLabel = getBankLabel(recipientBankVal);
+            const s = langStrings;
+
+            receiptCard.className = 'receipt-card ' + bankClass;
+            bankNameSpan.textContent = bankLabel;
+
+            receiptGrid.innerHTML = `
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-user"></i> ${s.receiptSender || 'Sender'}</span>
+                    <span class="value">${escapeHtml(sender)}</span>
+                </div>
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-building-columns"></i> ${s.receiptSenderBank || 'Origin Bank'}</span>
+                    <span class="value">${escapeHtml(senderBankVal)} <span class="bank-tag">${s.receiptOriginTag || 'origin'}</span></span>
+                </div>
+
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-hashtag"></i> ${s.receiptSenderAccount || 'Origin Account'}</span>
+                    <span class="value">${escapeHtml(senderAccountVal)}</span>
+                </div>
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-credit-card"></i> ${s.receiptSenderDoc || 'Document'}</span>
+                    <span class="value">${escapeHtml(senderDocVal) || '—'}</span>
+                </div>
+
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-user-check"></i> ${s.receiptRecipient || 'Recipient'}</span>
+                    <span class="value">${escapeHtml(recipient)}</span>
+                </div>
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-building-columns"></i> ${s.receiptRecipientBank || 'Destination Bank'}</span>
+                    <span class="value">${escapeHtml(recipientBankVal)} <span class="bank-tag">${s.receiptDestTag || 'destination'}</span></span>
+                </div>
+
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-hashtag"></i> ${s.receiptRecipientAccount || 'Destination Account'}</span>
+                    <span class="value">${escapeHtml(recipientAccountVal)}</span>
+                </div>
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-credit-card"></i> ${s.receiptRecipientDoc || 'Document'}</span>
+                    <span class="value">${escapeHtml(recipientDocVal) || '—'}</span>
+                </div>
+
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-money-bill-wave"></i> ${s.receiptAmount || 'Amount Transferred'}</span>
+                    <span class="value"><span class="amount-large">${formattedAmount}</span></span>
+                </div>
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-pen"></i> ${s.receiptConcept || 'Concept'}</span>
+                    <span class="value">${escapeHtml(conceptVal) || '—'}</span>
+                </div>
+
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-clock"></i> ${s.receiptDateTime || 'Date and Time'}</span>
+                    <span class="value">${escapeHtml(now)}</span>
+                </div>
+                <div class="receipt-item">
+                    <span class="label"><i class="fas fa-qrcode"></i> ${s.receiptCode || 'Operation Code'}</span>
+                    <span class="value" style="font-family:monospace;letter-spacing:0.4px;font-size:13px;">${escapeHtml(code)}</span>
+                </div>
+
+                <div class="receipt-item full-width" style="border-bottom:none;padding-top:4px;padding-bottom:0;">
+                    <span class="label"><i class="fas fa-check-circle" style="color:#0a5e2c;"></i> ${s.receiptStatus || 'Status'}</span>
+                    <span class="value" style="color:#0a5e2c;font-weight:700;">${s.receiptStatusOk || '✓ Successfully completed'}</span>
+                </div>
+            `;
+
+            receiptCode.textContent = code;
+            lastReceiptData = data;
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  SAVE TO FIRESTORE & HANDLE TRANSFER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function handleTransfer(e) {
+            e.preventDefault();
+
+            const sender = senderName.value.trim();
+            const senderBankVal = senderBank.value;
+            const senderAccountVal = senderAccount.value.trim();
+            const senderDocVal = senderDoc.value.trim();
+            const recipient = recipientName.value.trim();
+            const recipientBankVal = recipientBank.value;
+            const recipientAccountVal = recipientAccount.value.trim();
+            const recipientDocVal = recipientDoc.value.trim();
+            const amountVal = parseFloat(amountInput.value);
+            const conceptVal = concept.value.trim();
+
+            const s = langStrings;
+
+            if (!sender) {
+                showToast(s.toastSenderNameError || 'Enter the sender\'s name.', 'error');
+                senderName.focus();
+                return;
+            }
+            if (!senderAccountVal) {
+                showToast(s.toastSenderAccountError || 'Enter the sender\'s account number.', 'error');
+                senderAccount.focus();
+                return;
+            }
+            if (!recipient) {
+                showToast(s.toastRecipientNameError || 'Enter the recipient\'s name.', 'error');
+                recipientName.focus();
+                return;
+            }
+            if (!recipientAccountVal) {
+                showToast(s.toastRecipientAccountError || 'Enter the recipient\'s account number.', 'error');
+                recipientAccount.focus();
+                return;
+            }
+            if (isNaN(amountVal) || amountVal <= 0) {
+                showToast(s.toastAmountError || 'Enter a valid amount greater than $ 0.00.', 'error');
+                amountInput.focus();
+                return;
+            }
+
+            const code = generateReceiptCode();
+
+            // Disable button
+            sendBtn.disabled = true;
+            const origText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+            try {
+                const transferData = {
+                    senderName: sender,
+                    senderBank: senderBankVal,
+                    senderAccount: senderAccountVal,
+                    senderDoc: senderDocVal || '',
+                    recipientName: recipient,
+                    recipientBank: recipientBankVal,
+                    recipientAccount: recipientAccountVal,
+                    recipientDoc: recipientDocVal || '',
+                    amount: amountVal,
+                    concept: conceptVal || '',
+                    code: code,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending'
+                };
+
+                const docRef = await db.collection('transfers').add(transferData);
+
+                // Build receipt with the data
+                const data = {
+                    sender,
+                    senderBankVal,
+                    senderAccountVal,
+                    senderDocVal,
+                    recipient,
+                    recipientBankVal,
+                    recipientAccountVal,
+                    recipientDocVal,
+                    amountVal,
+                    conceptVal,
+                    code
+                };
+                buildReceipt(data);
+                lastReceiptData = data;
+                lastReceiptData.docId = docRef.id;
+
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                showToast(s.toastSuccess || '✅ Transfer completed! Receipt generated.', 'success');
+                if (navigator.vibrate) navigator.vibrate(15);
+            } catch (err) {
+                console.error('Firestore error:', err);
+                showToast(s.toastFirestoreError || '❌ Error saving to Firestore. Please try again.', 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = origText;
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  CLOSE RECEIPT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function closeReceipt() {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  PRINT RECEIPT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function printReceipt() {
+            const content = receiptCard.outerHTML;
+            const win = window.open('', '_blank', 'width=900,height=700');
+            if (!win) {
+                showToast('Allow popups to print.', 'error');
+                return;
+            }
+            win.document.write(`
+                <html>
+                    <head>
+                        <title>Transfer Receipt · Puerto Rico</title>
+                        <link rel="preconnect" href="https://fonts.googleapis.com" />
+                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+                        <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+                        <style>
+                            * { box-sizing:border-box; margin:0; padding:0; }
+                            body { font-family:'Inter',sans-serif; background:#fff; padding:30px 16px; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+                            .receipt-card { max-width:680px; width:100%; background:#fff; border-radius:24px; border:1.5px solid #e8ecf4; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden; }
+                            .receipt-header { padding:18px 22px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:2px solid rgba(255,255,255,0.12); }
+                            .receipt-header .left { display:flex; align-items:center; gap:12px; }
+                            .receipt-header .left .icon-wrap { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; background:rgba(255,255,255,0.15); }
+                            .receipt-header .left .bank-name { font-size:16px; font-weight:800; color:#fff; line-height:1.2; }
+                            .receipt-header .left .bank-name small { display:block; font-size:9px; font-weight:400; opacity:0.8; }
+                            .receipt-header .status-badge { background:rgba(255,255,255,0.15); color:#fff; padding:3px 16px; border-radius:40px; font-weight:700; font-size:11px; display:flex; align-items:center; gap:6px; border:1px solid rgba(255,255,255,0.10); }
+                            .receipt-body { padding:18px 22px 12px; }
+                            .receipt-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; }
+                            .receipt-item { display:flex; flex-direction:column; gap:2px; padding-bottom:10px; border-bottom:1px solid #f0f2f6; }
+                            .receipt-item .label { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#8b9aae; }
+                            .receipt-item .value { font-size:13px; font-weight:600; color:#0f1a2b; word-break:break-word; }
+                            .receipt-item .value .bank-tag { display:inline-block; background:#edf1f8; padding:0 10px; border-radius:30px; font-size:9px; font-weight:600; color:#1e2a3a; margin-left:4px; }
+                            .receipt-item .value .amount-large { font-size:24px; font-weight:800; letter-spacing:-0.2px; color:#002868; }
+                            .receipt-divider { grid-column:1/-1; height:1px; background:linear-gradient(to right,transparent,#e2e7ef,transparent); margin:0 0 4px; }
+                            .receipt-item.full-width { grid-column:1/-1; }
+                            .receipt-footer { padding:10px 22px 16px; border-top:2px solid #f0f2f6; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#fafbfd; border-radius:0 0 24px 24px; }
+                            .receipt-footer .code-section { font-size:10px; color:#7d8da0; font-weight:500; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+                            .receipt-footer .code-section .code { font-weight:700; color:#0f1a2b; font-family:monospace; letter-spacing:0.4px; background:#edf1f8; padding:2px 10px; border-radius:30px; font-size:11px; }
+                            .receipt-footer .actions { display:none; }
+                            .bank-popular .receipt-header { background:linear-gradient(135deg,#0033A0,#002277); }
+                            .bank-firstbank .receipt-header { background:linear-gradient(135deg,#004481,#002d5a); }
+                            .bank-oriental .receipt-header { background:linear-gradient(135deg,#8B1A4A,#5f1133); }
+                            .bank-santander .receipt-header { background:linear-gradient(135deg,#E0001B,#b30016); }
+                            .bank-banesco .receipt-header { background:linear-gradient(135deg,#1A3C6E,#0f2850); }
+                            .bank-cooperativa .receipt-header { background:linear-gradient(135deg,#2E7D32,#1d5420); }
+                            .bank-pichincha .receipt-header { background:linear-gradient(135deg,#003DA5,#002a75); }
+                            .bank-scotiabank .receipt-header { background:linear-gradient(135deg,#E0001B,#b30016); }
+                            .bank-popular .receipt-item .value .amount-large { color:#0033A0; }
+                            .bank-firstbank .receipt-item .value .amount-large { color:#004481; }
+                            .bank-oriental .receipt-item .value .amount-large { color:#8B1A4A; }
+                            .bank-santander .receipt-item .value .amount-large { color:#E0001B; }
+                            .bank-banesco .receipt-item .value .amount-large { color:#1A3C6E; }
+                            .bank-cooperativa .receipt-item .value .amount-large { color:#2E7D32; }
+                            .bank-pichincha .receipt-item .value .amount-large { color:#003DA5; }
+                            .bank-scotiabank .receipt-item .value .amount-large { color:#E0001B; }
+                            @media print { body { padding:16px; } .receipt-card { border:1px solid #ddd; box-shadow:none; } .receipt-footer .actions { display:none; } }
+                            @media (max-width:600px) { .receipt-grid { grid-template-columns:1fr; gap:2px; } .receipt-item.full-width { grid-column:1; } .receipt-divider { grid-column:1; } .receipt-header { flex-direction:column; align-items:flex-start; } .receipt-footer { flex-direction:column; align-items:flex-start; } .receipt-item .value .amount-large { font-size:20px; } }
+                        </style>
+                    </head>
+                    <body>
+                        ${content}
+                        <script>
+                            window.onload = function() {
+                                window.print();
+                                setTimeout(function(){ window.close(); }, 800);
+                            };
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            win.document.close();
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  DOWNLOAD PNG
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function downloadReceipt() {
+            const btn = downloadBtn;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
+
+            if (!lastReceiptData) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('First generate a receipt.', 'error');
+                return;
+            }
+
+            try {
+                const data = lastReceiptData;
+                const bankClass = getBankClass(data.recipientBankVal);
+                const bankLabel = getBankLabel(data.recipientBankVal);
+                const formattedAmount = formatCurrency(data.amountVal);
+                const now = getNowFormatted();
+                const s = langStrings;
+
+                const receiptHTML = `
+                    <div class="receipt-card ${bankClass}" style="border-radius:24px;overflow:hidden;background:#fff;width:680px;max-width:100%;">
+                        <div class="receipt-header" style="padding:20px 22px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:2px solid rgba(255,255,255,0.15);">
+                            <div class="left" style="display:flex;align-items:center;gap:12px;">
+                                <div class="icon-wrap" style="width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;background:rgba(255,255,255,0.18);flex-shrink:0;">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div>
+                                    <div class="bank-name" style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.2px;line-height:1.2;">
+                                        ${escapeHtml(bankLabel)}
+                                        <small style="display:block;font-size:10px;font-weight:400;opacity:0.8;letter-spacing:0.3px;">${s.receiptBankSub || 'Interbank Transfer'}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="status-badge" style="background:rgba(255,255,255,0.18);color:#fff;padding:4px 16px;border-radius:40px;font-weight:700;font-size:11px;display:flex;align-items:center;gap:8px;letter-spacing:0.3px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.12);">
+                                <i class="fas fa-check-circle"></i> ${s.receiptStatusText || 'CONFIRMED'}
+                            </div>
+                        </div>
+                        <div class="receipt-body" style="padding:20px 22px 14px;">
+                            <div class="receipt-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;">
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-user"></i> ${s.receiptSender || 'Sender'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.sender)}</span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-building-columns"></i> ${s.receiptSenderBank || 'Origin Bank'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.senderBankVal)} <span class="bank-tag" style="display:inline-block;background:#edf1f8;padding:1px 12px;border-radius:30px;font-size:10px;font-weight:600;color:#1e2a3a;margin-left:4px;">${s.receiptOriginTag || 'origin'}</span></span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-hashtag"></i> ${s.receiptSenderAccount || 'Origin Account'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.senderAccountVal)}</span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-credit-card"></i> ${s.receiptSenderDoc || 'Document'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.senderDocVal) || '—'}</span>
+                                </div>
+                                <div class="receipt-divider" style="grid-column:1/-1;height:1px;background:linear-gradient(to right,transparent,#e2e7ef,transparent);margin:0 0 6px;"></div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-user-check"></i> ${s.receiptRecipient || 'Recipient'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.recipient)}</span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-building-columns"></i> ${s.receiptRecipientBank || 'Destination Bank'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.recipientBankVal)} <span class="bank-tag" style="display:inline-block;background:#edf1f8;padding:1px 12px;border-radius:30px;font-size:10px;font-weight:600;color:#1e2a3a;margin-left:4px;">${s.receiptDestTag || 'destination'}</span></span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-hashtag"></i> ${s.receiptRecipientAccount || 'Destination Account'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.recipientAccountVal)}</span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-credit-card"></i> ${s.receiptRecipientDoc || 'Document'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.recipientDocVal) || '—'}</span>
+                                </div>
+                                <div class="receipt-divider" style="grid-column:1/-1;height:1px;background:linear-gradient(to right,transparent,#e2e7ef,transparent);margin:0 0 6px;"></div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-money-bill-wave"></i> ${s.receiptAmount || 'Amount Transferred'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;"><span class="amount-large" style="font-size:26px;font-weight:800;letter-spacing:-0.3px;color:#002868;">${formattedAmount}</span></span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-pen"></i> ${s.receiptConcept || 'Concept'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(data.conceptVal) || '—'}</span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-clock"></i> ${s.receiptDateTime || 'Date and Time'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;">${escapeHtml(now)}</span>
+                                </div>
+                                <div class="receipt-item" style="display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #f0f2f6;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-qrcode"></i> ${s.receiptCode || 'Operation Code'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;font-family:monospace;letter-spacing:0.4px;font-size:13px;">${escapeHtml(data.code)}</span>
+                                </div>
+                                <div class="receipt-item full-width" style="grid-column:1/-1;display:flex;flex-direction:column;gap:2px;padding-top:4px;padding-bottom:0;border-bottom:none;">
+                                    <span class="label" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8b9aae;"><i class="fas fa-check-circle" style="color:#0a5e2c;"></i> ${s.receiptStatus || 'Status'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;word-break:break-word;color:#0a5e2c;font-weight:700;">${s.receiptStatusOk || '✓ Successfully completed'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="receipt-footer" style="padding:12px 22px 18px;border-top:2px solid #f0f2f6;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#fafbfd;border-radius:0 0 24px 24px;">
+                            <div class="code-section" style="font-size:11px;color:#7d8da0;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <i class="far fa-clock"></i> ${s.receiptOpLabel || 'Operation'}:
+                                <span class="code" style="font-weight:700;color:#0f1a2b;font-family:monospace;letter-spacing:0.4px;background:#edf1f8;padding:3px 12px;border-radius:30px;font-size:12px;">${escapeHtml(data.code)}</span>
+                            </div>
+                            <div class="actions" style="display:none;"></div>
+                        </div>
+                    </div>
+                `;
+
+                const tempDiv = document.createElement('div');
+                tempDiv.id = 'tempCapture';
+                tempDiv.style.cssText =
+                    'position:fixed;left:-9999px;top:0;width:680px;background:#ffffff;border-radius:24px;overflow:hidden;z-index:-1;pointer-events:none;opacity:0;';
+                tempDiv.innerHTML = receiptHTML;
+                document.body.appendChild(tempDiv);
+
+                setTimeout(() => {
+                    const targetEl = tempDiv.querySelector('.receipt-card');
+                    if (!targetEl) {
+                        document.body.removeChild(tempDiv);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        showToast('Error generating image.', 'error');
+                        return;
+                    }
+
+                    html2canvas(targetEl, {
+                        scale: 2.5,
+                        backgroundColor: '#ffffff',
+                        allowTaint: true,
+                        useCORS: true,
+                        logging: false,
+                        borderRadius: '24px',
+                        width: 680,
+                        height: targetEl.scrollHeight,
+                    }).then(canvas => {
+                        if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+                        const link = document.createElement('a');
+                        link.download = `receipt-pr-${Date.now()}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        showToast('📸 Receipt downloaded as PNG.', 'success');
+                    }).catch(err => {
+                        console.warn('html2canvas error:', err);
+                        if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        showToast('Error generating image. Use "Print".', 'error');
+                    });
+                }, 100);
+            } catch (err) {
+                console.error('Download error:', err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('Error downloading. Use "Print".', 'error');
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  CLEAR FORM
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function clearForm() {
+            senderName.value = '';
+            senderAccount.value = '';
+            senderDoc.value = '';
+            recipientName.value = '';
+            recipientAccount.value = '';
+            recipientDoc.value = '';
+            amountInput.value = '';
+            concept.value = '';
+            senderBank.value = 'Banco Popular';
+            recipientBank.value = 'Banco Popular';
+            senderName.focus();
+            showToast(langStrings.toastClear || '🧹 Form cleared.', 'success');
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  EVENT LISTENERS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        form.addEventListener('submit', handleTransfer);
+        clearBtn.addEventListener('click', clearForm);
+        closeBtn.addEventListener('click', closeReceipt);
+        printBtn.addEventListener('click', printReceipt);
+        downloadBtn.addEventListener('click', downloadReceipt);
+
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) closeReceipt();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && overlay.classList.contains('active')) {
+                closeReceipt();
+            }
+        });
+
+        amountInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  INIT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        loadLanguage().then(() => {
+            console.log('🇵🇷 Puerto Rico Transfer · Sender loaded');
+            console.log('📄 Language:', currentLang);
+        });
+    </script>
+
+</body>
+</html>
