@@ -722,6 +722,13 @@
             color: #E0001B;
         }
 
+        .bank-banreservas .receipt-header {
+            background: linear-gradient(135deg, #1A7A3C, #0F5A2A);
+        }
+        .bank-banreservas .receipt-item .value .amount-large {
+            color: #1A7A3C;
+        }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 700px) {
             body {
@@ -1069,6 +1076,7 @@
                             <option value="Cooperativa de Ahorro y Crédito">Cooperativa</option>
                             <option value="Banco Pichincha">Banco Pichincha</option>
                             <option value="Scotiabank">Scotiabank</option>
+                            <option value="Banreservas">Banreservas</option>
                         </select>
                     </div>
                 </div>
@@ -1106,6 +1114,7 @@
                             <option value="Cooperativa de Ahorro y Crédito">Cooperativa</option>
                             <option value="Banco Pichincha">Banco Pichincha</option>
                             <option value="Scotiabank">Scotiabank</option>
+                            <option value="Banreservas">Banreservas</option>
                         </select>
                     </div>
                 </div>
@@ -1299,7 +1308,7 @@
         };
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  BANK COLOR MAP (Puerto Rico banks)
+        //  BANK COLOR MAP (Puerto Rico banks + Banreservas)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         const bankColorMap = {
@@ -1310,7 +1319,8 @@
             'Banesco': { class: 'bank-banesco', label: 'Banesco' },
             'Cooperativa de Ahorro y Crédito': { class: 'bank-cooperativa', label: 'Cooperativa' },
             'Banco Pichincha': { class: 'bank-pichincha', label: 'Banco Pichincha' },
-            'Scotiabank': { class: 'bank-scotiabank', label: 'Scotiabank' }
+            'Scotiabank': { class: 'bank-scotiabank', label: 'Scotiabank' },
+            'Banreservas': { class: 'bank-banreservas', label: 'Banreservas' }
         };
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2008,6 +2018,7 @@
                             .bank-cooperativa .receipt-header { background:linear-gradient(135deg,#2E7D32,#1d5420); }
                             .bank-pichincha .receipt-header { background:linear-gradient(135deg,#003DA5,#002a75); }
                             .bank-scotiabank .receipt-header { background:linear-gradient(135deg,#E0001B,#b30016); }
+                            .bank-banreservas .receipt-header { background:linear-gradient(135deg,#1A7A3C,#0F5A2A); }
                             .bank-popular .receipt-item .value .amount-large { color:#0033A0; }
                             .bank-firstbank .receipt-item .value .amount-large { color:#004481; }
                             .bank-oriental .receipt-item .value .amount-large { color:#8B1A4A; }
@@ -2016,6 +2027,7 @@
                             .bank-cooperativa .receipt-item .value .amount-large { color:#2E7D32; }
                             .bank-pichincha .receipt-item .value .amount-large { color:#003DA5; }
                             .bank-scotiabank .receipt-item .value .amount-large { color:#E0001B; }
+                            .bank-banreservas .receipt-item .value .amount-large { color:#1A7A3C; }
                             @media print { body { padding:16px; } .receipt-card { border:1px solid #ddd; box-shadow:none; } .receipt-footer .actions { display:none; } }
                             @media (max-width:600px) { .receipt-grid { grid-template-columns:1fr; gap:2px; } .receipt-item.full-width { grid-column:1; } .receipt-divider { grid-column:1; } .receipt-header { flex-direction:column; align-items:flex-start; } .receipt-footer { flex-direction:column; align-items:flex-start; } .receipt-item .value .amount-large { font-size:20px; } }
                         </style>
